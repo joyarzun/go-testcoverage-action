@@ -1,0 +1,73 @@
+name: "go testcoverage"
+description: "Run tests and get coverage on your Go code"
+author: "Jonnatan Oyarzun"
+inputs:
+  install-go:
+    description: |
+      By default the action install a version of Go appropriate for building and running.
+      If set to false, you will need to have installed Go.
+    required: true
+    default: true
+  go-version:
+    description: |
+      Version of Go
+    required: false
+    default: 1.19.x
+  cache-key:
+    description: |
+      Custom string to include in the cache key. This is useful when using multiple Go versions.
+    required: false
+  coverage-threshold:
+    description: |
+      The threshold in percentage to consider the test successful. Default is 0 so any value will pass
+    required: true
+    default: 0
+  use-ginkgo:
+    description: |
+      Use ginkgo to run tests and get the coverage
+    required: false
+    default: false
+  workdir:
+    description: |
+      Go base directory
+    required: false
+    default: .
+runs:
+  using: "composite"
+  steps:
+    - id: install_go
+      if: ${{ inputs.install-go != 'false' }}
+      uses: WillAbides/setup-go-faster@v1.8.0
+      with:
+        go-version: ${{ inputs.go-version }}
+    - uses: actions/cache@v3
+      if: ${{ inputs.merge-files == '' }}
+      with:
+        path: |
+          ${{ inputs.install-go != 'false' && steps.install_go.outputs.GOCACHE || '' }}
+        key: testcoverage-${{ runner.os }}-${{ inputs.cache-key }}-${{ github.sha }}
+        restore-keys: |
+          testcoverage-${{ runner.os }}-${{ inputs.cache-key }}-
+    - env:
+        COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
+        USE_GINKGO: ${{ inputs.use-ginkgo }}
+        WORKDIR: ${{ inputs.workdir }}
+      run: |
+        cd "$WORKDIR"
+        if $USE_GINKGO -eq "true"; then
+          ginkgo -v -cover -covermode=count -coverpkg=./... ./...
+        else
+          go test -v -coverprofile=coverprofile.out ./...
+        fi
+        echo "Checking test coverage is above threshold ..."
+        echo "Threshold             : $COVERAGE_THRESHOLD %"
+        totalCoverage=`go tool cover -func=coverprofile.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
+        echo "Current test coverage : $totalCoverage %"
+        if (( $(echo "$totalCoverage $TESTCOVERAGE_THRESHOLD" | awk '{print ($1 > $2)}') )); then
+            echo "Coverage OK"
+        else
+            echo "Current test coverage is below threshold. Please add more unit tests or adjust threshold to a lower value."
+            echo "Failed"
+            exit 1
+        fi
+      shell: bash
