@@ -53,7 +53,7 @@ runs:
         USE_GINKGO: ${{ inputs.use-ginkgo }}
         WORKDIR: ${{ inputs.workdir }}
       run: |
-        cd "WORKDIR"
+        cd "$WORKDIR"
         if $USE_GINKGO -eq "true"; then
           ginkgo -v -cover -covermode=count -coverpkg=./... ./...
         else
