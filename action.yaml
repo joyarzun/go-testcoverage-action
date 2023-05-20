@@ -1,4 +1,4 @@
-name: "go testcoverage"
+name: "go testcoverage action"
 description: "Run tests and get coverage on your Go code"
 author: "Jonnatan Oyarzun"
 inputs:
