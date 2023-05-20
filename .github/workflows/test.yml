@@ -14,8 +14,8 @@ jobs:
         uses: ./
         with:
           workdir: test-gotest
-      # - name: goginkgo
-      #   uses: ./
-      #     with:
-      #       workdir: test-ginkgo
-      #       use-ginkgo: true
+      - name: goginkgo
+        uses: ./
+        with:
+          workdir: test-ginkgo
+          use-ginkgo: true
