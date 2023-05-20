@@ -55,6 +55,7 @@ runs:
       run: |
         cd "$WORKDIR"
         if $USE_GINKGO -eq "true"; then
+          go install github.com/onsi/ginkgo/v2/ginkgo
           ginkgo -v -cover -covermode=count -coverpkg=./... ./...
         else
           go test -v -coverprofile=coverprofile.out ./...
