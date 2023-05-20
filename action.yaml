@@ -32,6 +32,11 @@ inputs:
       Go base directory
     required: false
     default: .
+  should-fail:
+    description: |
+      Util var to test if fail
+    required: false
+    default: false
 runs:
   using: "composite"
   steps:
@@ -52,6 +57,7 @@ runs:
         COVERAGE_THRESHOLD: ${{ inputs.coverage-threshold }}
         USE_GINKGO: ${{ inputs.use-ginkgo }}
         WORKDIR: ${{ inputs.workdir }}
+        SHOULD_FAIL: ${{ inputs.should-fail }}
       run: |
         cd "$WORKDIR"
         if $USE_GINKGO -eq "true"; then
@@ -64,11 +70,17 @@ runs:
         echo "Threshold             : $COVERAGE_THRESHOLD %"
         totalCoverage=`go tool cover -func=coverprofile.out | grep total | grep -Eo '[0-9]+\.[0-9]+'`
         echo "Current test coverage : $totalCoverage %"
-        if (( $(echo "$totalCoverage $TESTCOVERAGE_THRESHOLD" | awk '{print ($1 > $2)}') )); then
+        if (( $(echo "$totalCoverage $COVERAGE_THRESHOLD" | awk '{print ($1 >= $2)}') )); then
             echo "Coverage OK"
+            if "$SHOULD_FAIL" -eq "true"; then
+              exit 1
+            fi
         else
             echo "Current test coverage is below threshold. Please add more unit tests or adjust threshold to a lower value."
             echo "Failed"
+            if "$SHOULD_FAIL" -eq "true"; then
+              exit 0
+            fi
             exit 1
         fi
       shell: bash
