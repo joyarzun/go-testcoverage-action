@@ -18,7 +18,6 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             try {
               const response = await github.rest.repos.createRelease({
@@ -29,7 +28,7 @@ jobs:
                 prerelease: false,
                 repo: context.repo.repo,
                 tag_name: process.env.RELEASE_TAG,
-                make_latest: true
+                make_latest: "true"
               });
 
               core.exportVariable('RELEASE_ID', response.data.id);
