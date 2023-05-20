@@ -18,3 +18,9 @@ jobs:
         with:
           workdir: test-ginkgo
           use-ginkgo: true
+      - name: should fail
+        uses: ./
+        with:
+          workdir: test-gotest
+          coverage-threshold: 100
+          should-fail: true
