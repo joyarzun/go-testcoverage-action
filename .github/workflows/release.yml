@@ -18,6 +18,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             try {
               const response = await github.rest.repos.createRelease({
